@@ -1,0 +1,5 @@
+<resources>
+    <color name="scanner_green">#137333</color>
+    <color name="scanner_amber">#9A6700</color>
+    <color name="scanner_red">#B3261E</color>
+</resources>
