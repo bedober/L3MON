@@ -6,6 +6,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PermissionInfo;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,6 +18,9 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,8 +29,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Local, read-only configuration scanner. It does not exploit applications, inspect their
- * private data, or send inventory data off the device.
+ * Local, read-only configuration scanner with real-time backend integration.
+ * It does not exploit applications, inspect their private data, or compromise
+ * confidentiality beyond reading publicly-available package metadata.
  */
 public class MainActivity extends Activity {
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -35,11 +40,61 @@ public class MainActivity extends Activity {
     private TextView status;
     private ProgressBar progress;
     private Button scanButton;
+    private TextView connectionStatus;
+    private SocketClient socketClient;
+    private DeviceManager deviceManager;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(createScreen());
+        deviceManager = new DeviceManager(this);
+        setupSocketClient();
+    }
+
+    private void setupSocketClient() {
+        socketClient = new SocketClient();
+        socketClient.addListener(new SocketClient.ConnectionListener() {
+            @Override
+            public void onConnected() {
+                registerDevice();
+            }
+
+            @Override
+            public void onDisconnected() {
+                mainHandler.post(() -> {
+                    connectionStatus.setText("Offline");
+                    connectionStatus.setBackgroundColor(Color.rgb(231, 76, 60));
+                });
+            }
+
+            @Override
+            public void onConnectError(Exception e) {
+                mainHandler.post(() -> {
+                    connectionStatus.setText("Connection error");
+                    connectionStatus.setBackgroundColor(Color.rgb(231, 76, 60));
+                });
+            }
+
+            @Override
+            public void onScanConfirmed() {
+                mainHandler.post(() -> status.setText("Results sent to dashboard."));
+            }
+        });
+        socketClient.connect();
+    }
+
+    private void registerDevice() {
+        try {
+            JSONObject deviceObj = deviceManager.toJson();
+            socketClient.registerDevice(deviceObj, null);
+            mainHandler.post(() -> {
+                connectionStatus.setText("Live");
+                connectionStatus.setBackgroundColor(Color.rgb(39, 174, 95));
+            });
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private View createScreen() {
@@ -48,6 +103,18 @@ public class MainActivity extends Activity {
         root.setOrientation(LinearLayout.VERTICAL);
         root.setPadding(pad, pad, pad, pad);
         root.setBackgroundColor(Color.rgb(250, 250, 250));
+
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.END);
+        connectionStatus = new TextView(this);
+        connectionStatus.setText("Connecting…");
+        connectionStatus.setTextColor(Color.WHITE);
+        connectionStatus.setPadding(dp(8), dp(4), dp(8), dp(4));
+        connectionStatus.setBackgroundColor(Color.rgb(158, 158, 158));
+        connectionStatus.setGravity(Gravity.CENTER);
+        header.addView(connectionStatus, new LinearLayout.LayoutParams(-2, -2));
+        root.addView(header, new LinearLayout.LayoutParams(-1, -2));
 
         TextView title = text("L3MON Vulnerability Scanner", 24, Color.rgb(19, 115, 51));
         root.addView(title);
@@ -150,6 +217,20 @@ public class MainActivity extends Activity {
             return;
         }
         for (Finding finding : findings) addFindingCard(finding);
+
+        if (socketClient != null && socketClient.isConnected()) {
+            sendScanResults(findings);
+        }
+    }
+
+    private void sendScanResults(List<Finding> findings) {
+        try {
+            int totalApps = getPackageManager().getInstalledApplications(0).size();
+            JSONObject payload = deviceManager.findingsToJson(findings, totalApps);
+            socketClient.sendScanResults(payload);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void addFindingCard(Finding finding) {
@@ -173,12 +254,9 @@ public class MainActivity extends Activity {
         text.setGravity(Gravity.START); text.setLineSpacing(dp(2), 1f); return text;
     }
     private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
-    @Override public void onDestroy() { executor.shutdownNow(); super.onDestroy(); }
-
-    private static class Finding {
-        final String label, packageName; final int score; final List<String> signals;
-        Finding(String label, String packageName, int score, List<String> signals) {
-            this.label = label; this.packageName = packageName; this.score = score; this.signals = signals;
-        }
+    @Override public void onDestroy() {
+        if (socketClient != null) socketClient.disconnect();
+        executor.shutdownNow();
+        super.onDestroy();
     }
 }

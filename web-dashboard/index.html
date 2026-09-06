@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>L3MON Security Dashboard</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>L3MON Security Dashboard</h1>
+    <div class="status-bar">
+      <span id="connection-status" class="status-disconnected">Disconnected</span>
+      <span id="device-count">0 devices online</span>
+      <span id="alert-count">0 active alerts</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="map-container" id="map">
+      <div class="legend">
+        <span class="legend-item legend-high">High Risk</span>
+        <span class="legend-item legend-review">Review</span>
+        <span class="legend-item legend-online">Online</span>
+        <span class="legend-item legend-offline">Offline</span>
+      </div>
+    </div>
+    <aside class="panel">
+      <div class="panel-section">
+        <h2>Active Devices</h2>
+        <ul class="device-list" id="device-list"></ul>
+      </div>
+      <div class="panel-section">
+        <h2>Recent Alerts</h2>
+        <ul class="alert-list" id="alert-list"></ul>
+      </div>
+      <div class="panel-section">
+        <h2>Recent Scans</h2>
+        <ul class="scan-list" id="scan-list"></ul>
+      </div>
+    </aside>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/socket-client.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      L3MON.init();
+    });
+  </script>
+</body>
+</html>
