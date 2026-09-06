@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.INTERNET" />
     <!-- Required on Android 11+ to inventory installed apps. Distribution on Google Play
          requires the app to qualify for the QUERY_ALL_PACKAGES policy exception. -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />

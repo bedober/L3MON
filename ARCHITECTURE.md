@@ -108,9 +108,12 @@ L3MON/
 - **Updates**: Real-time via Socket.IO
 - **Map Data**: GeoJSON from OpenStreetMap
 
-## Next Steps
-1. Initialize server/ directory with Express scaffold
-2. Set up lowdb schemas for devices, scans, locations
-3. Create WebSocket handlers in Android app
-4. Build Leaflet-based web dashboard
-5. Implement geolocation processing pipeline
+## Status
+
+All next steps have been implemented:
+
+1. ✅ `server/` initialized with Express + Socket.IO scaffold
+2. ✅ lowdb schemas for devices, scans, locations, and alerts
+3. ✅ WebSocket handlers in Android app (`SocketClient.java`, `DeviceManager.java`)
+4. ✅ Leaflet-based web dashboard with real-time map, device list, alerts, and scan history
+5. ✅ Geolocation processing pipeline (`geoService.js` using geoip-lite)

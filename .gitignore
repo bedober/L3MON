@@ -4,3 +4,22 @@ local.properties
 *.iml
 .idea/
 .DS_Store
+
+# Node.js / npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+
+# Server data
+l3mon.json
+
+# Android Studio
+*.apk
+*.ap_
+*.aab
+captures/
+.externalNativeBuild/
+.cxx/
+*.so

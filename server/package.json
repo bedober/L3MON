@@ -1,0 +1,21 @@
+{
+  "name": "l3mon-server",
+  "version": "1.0.0",
+  "description": "L3MON backend server for real-time mobile security monitoring",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "geoip-lite": "^2.0.3",
+    "lowdb": "^7.0.1",
+    "socket.io": "^4.8.1",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.3"
+  }
+}
